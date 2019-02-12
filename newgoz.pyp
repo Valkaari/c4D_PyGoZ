@@ -158,7 +158,7 @@ def CreateObjectFromGoZb(objectPathStr, objectName, parentObj):
         c4d.StatusSetText(objectName + "Insert Object")
         vDoc.InsertObject(vObj, parentObj,None)
         vObj.SetName(objectName)
-        vObj.SetPhong(True,False,1)
+        vObj.SetPhong(True,True,c4d.utils.DegToRad(40))
         
         vObj[GoZ_CONTAINER_ID] = objectPathStr
         vObj.SetBit(c4d.BIT_ACTIVE)
