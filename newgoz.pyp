@@ -571,7 +571,7 @@ if __name__ == "__main__":
         bmp.InitWith(fn) 
 
         plugins.RegisterCommandPlugin(id=ZBRUSH_GOZ_R20_ID_FROMZB, 
-                                  str="Import To ZBrush",
+                                  str="Import From ZBrush",
                                   info=0,
                                   help="A python goz version", 
                                   dat=GOZ_FROMZBRUSH(),
