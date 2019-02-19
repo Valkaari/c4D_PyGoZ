@@ -66,9 +66,9 @@ def CreateObjectFromGoZb(objectPathStr, objectName, parentObj):
 
         while 1:
             f.seek(fileOffset,0)
-            partType = struct.unpack('@l', f.read(4))[0]
-            partSize = struct.unpack('@l', f.read(4))[0]
-            itemsCount = struct.unpack('@l', f.read(4))[0]
+            partType = struct.unpack('=l', f.read(4))[0]
+            partSize = struct.unpack('=l', f.read(4))[0]
+            itemsCount = struct.unpack('=l', f.read(4))[0]
             modifier = struct.unpack('@f', f.read(4))[0]
 
             if partType == GoZ_TAG_POINT_LIST :
@@ -98,10 +98,10 @@ def CreateObjectFromGoZb(objectPathStr, objectName, parentObj):
                 vObj.ResizeObject(ptcnt,itemsCount)
                 for i in xrange (itemsCount):
                     c4d.StatusSetBar(i / float(itemsCount) * 100)
-                    poly.a = struct.unpack('@l',f.read(4))[0]
-                    poly.d = struct.unpack('@l',f.read(4))[0]
-                    poly.c = struct.unpack('@l',f.read(4))[0]
-                    poly.b = struct.unpack('@l',f.read(4))[0]
+                    poly.a = struct.unpack('=l',f.read(4))[0]
+                    poly.d = struct.unpack('=l',f.read(4))[0]
+                    poly.c = struct.unpack('=l',f.read(4))[0]
+                    poly.b = struct.unpack('=l',f.read(4))[0]
                     if poly.b == -1:
                         poly.b = poly.c
                         poly.c = poly.d
@@ -112,10 +112,10 @@ def CreateObjectFromGoZb(objectPathStr, objectName, parentObj):
                 ptcnt = vObj.GetPointCount()
                 vObj.ResizeObject(ptcnt,itemsCount)
                 for i in xrange (itemsCount):
-                    poly.a = struct.unpack('@l',f.read(4))[0]
-                    poly.d = struct.unpack('@l',f.read(4))[0]
-                    poly.c = struct.unpack('@l',f.read(4))[0]
-                    poly.b = struct.unpack('@l',f.read(4))[0]
+                    poly.a = struct.unpack('=l',f.read(4))[0]
+                    poly.d = struct.unpack('=l',f.read(4))[0]
+                    poly.c = struct.unpack('=l',f.read(4))[0]
+                    poly.b = struct.unpack('=l',f.read(4))[0]
                     if poly.c == poly.b:
                         poly.c = poly.d
                     vObj.SetPolygon(i, poly)
@@ -174,6 +174,7 @@ def CreateMaterial(objectName):
     if not doc:
         return
     curMaterial = doc.SearchMaterial(objectName)
+    curMat = curMaterial
     if not curMaterial :
         c4d.CallCommand(13015) #new material
         curMat = doc.GetActiveMaterial()
@@ -184,7 +185,7 @@ def CreateMaterial(objectName):
     c4d.CallCommand(16725)  #load material textures
     c4d.CallCommand(16726)  # Unload Textures
     #do we have texture?
-    print baseProjectPath, textureMapPath
+
     if len(textureMapPath) >0:
         curMat[c4d.MATERIAL_USE_COLOR] = True
         bitmap = c4d.BaseList2D(c4d.Xbitmap) 
@@ -195,8 +196,9 @@ def CreateMaterial(objectName):
 
     else:
         sh = curMat[c4d.MATERIAL_COLOR_SHADER]
-        sh[c4d.BITMAPSHADER_FILENAME] = ""
-        sh.Remove()
+        if sh:
+            sh[c4d.BITMAPSHADER_FILENAME] = ""
+            sh.Remove()
 
     #do we have normal map?
     if len(normalMapPath) > 0:
@@ -214,8 +216,9 @@ def CreateMaterial(objectName):
     else:
         curMat[c4d.MATERIAL_USE_NORMAL] = False
         sh = curMat[c4d.MATERIAL_NORMAL_SHADER]
-        sh[c4d.BITMAPSHADER_FILENAME] = ""
-        sh.Remove()
+        if sh: 
+            sh[c4d.BITMAPSHADER_FILENAME] = ""
+            sh.Remove()
 
     #do we have disp map?
     if len(displacementMapPath) > 0:
@@ -230,8 +233,9 @@ def CreateMaterial(objectName):
     else:
         curMat[c4d.MATERIAL_USE_DISPLACEMENT] = False
         sh = curMat[c4d.MATERIAL_DISPLACEMENT_SHADER]
-        sh[c4d.BITMAPSHADER_FILENAME] = ""
-        sh.Remove()
+        if sh:
+            sh[c4d.BITMAPSHADER_FILENAME] = ""
+            sh.Remove()
 
 
 
@@ -278,9 +282,9 @@ def SaveObject(doc, obj , pathStr, file):
         if obj.IsInstanceOf(c4d.Opolygon):
             points = obj.GetAllPoints()
             pointsCount = obj.GetPointCount()
-            f.write(struct.pack('@l', GoZ_TAG_POINT_LIST))      #partType
-            f.write(struct.pack('@l', 16 + pointsCount*12))     #partSize 
-            f.write(struct.pack('@l',pointsCount))              #itemsCount
+            f.write(struct.pack('=l', GoZ_TAG_POINT_LIST))      #partType
+            f.write(struct.pack('=l', 16 + pointsCount*12))     #partSize 
+            f.write(struct.pack('=l',pointsCount))              #itemsCount
             f.write(struct.pack('@f',0.0))                        #modifier
 
             mg = obj.GetMg()
@@ -299,21 +303,21 @@ def SaveObject(doc, obj , pathStr, file):
             #write poly list 
             vadr = obj.GetAllPolygons()
             polyCount = obj.GetPolygonCount()
-            f.write(struct.pack('@l', GoZ_TAG_FACE4_LIST_FORMAT_1))             #partType
-            f.write(struct.pack('@l', 16 + polyCount*16))                     #partSize 
-            f.write(struct.pack('@l',polyCount))                                #itemsCount
+            f.write(struct.pack('=l', GoZ_TAG_FACE4_LIST_FORMAT_1))             #partType
+            f.write(struct.pack('=l', 16 + polyCount*16))                     #partSize 
+            f.write(struct.pack('=l',polyCount))                                #itemsCount
             f.write(struct.pack('@f',0.0))                                        #modifier
             for poly in vadr:
                 if poly.d == poly.c:
-                    f.write(struct.pack ('@l',poly.a))
-                    f.write(struct.pack ('@l',poly.c))
-                    f.write(struct.pack ('@l',poly.b))
-                    f.write(struct.pack ('@l',-1))
+                    f.write(struct.pack ('=l',poly.a))
+                    f.write(struct.pack ('=l',poly.c))
+                    f.write(struct.pack ('=l',poly.b))
+                    f.write(struct.pack ('=l',-1))
                 else:
-                    f.write(struct.pack ('@l',poly.a))
-                    f.write(struct.pack ('@l',poly.d))
-                    f.write(struct.pack ('@l',poly.c))
-                    f.write(struct.pack ('@l',poly.b))
+                    f.write(struct.pack ('=l',poly.a))
+                    f.write(struct.pack ('=l',poly.d))
+                    f.write(struct.pack ('=l',poly.c))
+                    f.write(struct.pack ('=l',poly.b))
             #write uv
             uvTag = obj.GetTag(c4d.Tuvw)
             if uvTag:
@@ -322,9 +326,9 @@ def SaveObject(doc, obj , pathStr, file):
                 
                 vect = Vector()
 
-                f.write(struct.pack('@l', GoZ_TAG_UV4_LIST))                 #partType
-                f.write(struct.pack('@l', 16 + uvCount*32))                  #partSize 
-                f.write(struct.pack('@l',uvCount))                           #itemsCount
+                f.write(struct.pack('=l', GoZ_TAG_UV4_LIST))                 #partType
+                f.write(struct.pack('=l', 16 + uvCount*32))                  #partSize 
+                f.write(struct.pack('=l',uvCount))                           #itemsCount
                 f.write(struct.pack('@f',0.0))                               #modifier
                 for i in xrange(polyCount):
                     uvwDict = uvTag.GetSlow(i)
@@ -366,7 +370,7 @@ def SaveObject(doc, obj , pathStr, file):
                 
 
 
-        f.write(struct.pack ('@l',GoZ_TAG_END_OF_FILE))
+        f.write(struct.pack ('=l',GoZ_TAG_END_OF_FILE))
 
         endFile = array.array('l', [0, 0, 0]) 
         f.write(endFile)
