@@ -74,7 +74,9 @@ def CreateObjectFromGoZb(objectPathStr, objectName, parentObj):
             if partType == GoZ_TAG_POINT_LIST :
                 c4d.StatusSetText(objectName + " Importing Points ")
                 mat = Matrix()
-                mat.Scale(Vector(100,100, -100))
+                # fix a bug with scale master.
+                #mat.Scale(Vector(100, 100, -100))
+                mat.Scale(Vector(0.1, 0.1, -0.1))
                 if parentObj != None:
                     tr = ~Matrix(parentObj.GetMg())
                     mat = mat*tr
@@ -289,7 +291,10 @@ def SaveObject(doc, obj , pathStr, file):
 
             mg = obj.GetMg()
             mat = Matrix()
-            mat.Scale(Vector(0.01,0.01,-0.01))
+            # fix a bug with scale master.
+            #mat.Scale(Vector(0.01,0.01,-0.01))
+            mat.Scale(Vector(10, 10, -10))
+
             mat = mat * mg
 
             #write point list
