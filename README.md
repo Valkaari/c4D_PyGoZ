@@ -10,3 +10,7 @@ after the first launch of cinema4D we can't catch sys.arg anymore so users must 
 
 
 on OSX sys.argv is empty so the script is not launched not even a sigle time
+
+
+
+If you are using Scale Master, please use the Scale Master Banch
